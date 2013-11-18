@@ -29,8 +29,14 @@ class PKPAuthor extends DataObject {
 	 * @return string
 	 */
 	function getFullName($lastFirst = false) {
-		if ($lastFirst) return $this->getData('lastName') . ', ' . $this->getData('firstName') . ($this->getData('middleName') != '' ? ' ' . $this->getData('middleName') : '');
-		else return $this->getData('firstName') . ' ' . ($this->getData('middleName') != '' ? $this->getData('middleName') . ' ' : '') . $this->getData('lastName') . ($this->getData('suffix') != '' ? ', ' . $this->getData('suffix') : '');
+		if ($lastFirst)
+			return $this->getData('lastName') . ', ' . $this->getData('firstName')
+			. ($this->getData('middleName') != '' ? ' ' . $this->getData('middleName') : '');
+		else
+			return $this->getData('firstName') . ' '
+			. ($this->getData('middleName') != '' ? $this->getData('middleName') . ' ' : '')
+			.  $this->getData('lastName')
+			. ($this->getData('suffix') != '' ? ', ' . $this->getData('suffix') : '');
 	}
 
 	//
@@ -51,7 +57,8 @@ class PKPAuthor extends DataObject {
 	 * @param $authorId int
 	 */
 	function setAuthorId($authorId) {
-		if (Config::getVar('debug', 'deprecation_warnings')) trigger_error('Deprecated function.');
+		if (Config::getVar('debug', 'deprecation_warnings'))
+			trigger_error('Deprecated function.');
 		return $this->setId($authorId);
 	}
 
