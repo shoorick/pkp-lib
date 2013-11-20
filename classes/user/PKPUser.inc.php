@@ -127,37 +127,56 @@ class PKPUser extends DataObject {
 
 	/**
 	 * Get first name.
+	 * @param $locale string
 	 * @return string
 	 */
-	function getFirstName() {
-		return $this->getData('firstName');
+	function getFirstName($locale) {
+		return $this->getData('firstName', $locale);
 	}
 
 	/**
 	 * Set first name.
 	 * @param $firstName string
+	 * @param $locale string
 	 */
-	function setFirstName($firstName)
-	{
-		return $this->setData('firstName', $firstName);
+	function setFirstName($firstName, $locale) {
+		return $this->setData('firstName', $firstName, $locale);
+	}
+
+	/**
+	 * Get localized first name.
+	 * @return string
+	 */
+	function getLocalizedFirstName() {
+		return $this->getLocalizedData('firstName');
 	}
 
 	/**
 	 * Get middle name.
+	 * @param $locale string
 	 * @return string
 	 */
-	function getMiddleName() {
-		return $this->getData('middleName');
+	function getMiddleName($locale) {
+		return $this->getData('middleName', $locale);
 	}
 
 	/**
 	 * Set middle name.
 	 * @param $middleName string
+	 * @param $locale string
 	 */
-	function setMiddleName($middleName) {
-		return $this->setData('middleName', $middleName);
+	function setMiddleName($middleName, $locale) {
+		return $this->setData('middleName', $middleName, $locale);
 	}
 
+	/**
+	 * Get localized middle name.
+	 * @return string
+	 */
+	function getLocalizedMiddleName() {
+		return $this->getLocalizedData('middleName');
+	}
+	
 	/**
 	 * Get initials.
 	 * @return string
@@ -176,19 +195,30 @@ class PKPUser extends DataObject {
 
 	/**
 	 * Get last name.
+	 * @param $locale string
 	 * @return string
 	 */
-	function getLastName() {
-		return $this->getData('lastName');
+	function getLastName($locale) {
+		return $this->getData('lastName', $locale);
 	}
 
 	/**
 	 * Set last name.
+	 * @param $locale string
 	 * @param $lastName string
 	 */
-	function setLastName($lastName) {
-		return $this->setData('lastName', $lastName);
+	function setLastName($lastName, $locale) {
+		return $this->setData('lastName', $lastName, $locale);
 	}
+
+	/**
+	 * Get localized last name.
+	 * @return string
+	 */
+	function getLocalizedLastName() {
+		return $this->getLocalizedData('firstName');
+	}
+	
 
 	/**
 	 * Get name suffix.

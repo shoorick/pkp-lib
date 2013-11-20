@@ -173,10 +173,10 @@ class PKPUserDAO extends DAO {
 		$user->setUsername($row['username']);
 		$user->setPassword($row['password']);
 		$user->setSalutation($row['salutation']);
-		$user->setFirstName($row['first_name']);
-		$user->setMiddleName($row['middle_name']);
+		$user->setFirstName($row['first_name'],   null);
+		$user->setMiddleName($row['middle_name'], null);
 		$user->setInitials($row['initials']);
-		$user->setLastName($row['last_name']);
+		$user->setLastName($row['last_name'],     null);
 		$user->setSuffix($row['suffix']);
 		$user->setGender($row['gender']);
 		$user->setEmail($row['email']);
@@ -224,10 +224,10 @@ class PKPUserDAO extends DAO {
 				$user->getUsername(),
 				$user->getPassword(),
 				$user->getSalutation(),
-				$user->getFirstName(),
-				$user->getMiddleName(),
+				$user->getFirstName(null),  // for compatibility
+				$user->getMiddleName(null), // for compatibility
 				$user->getInitials(),
-				$user->getLastName(),
+				$user->getLastName(null),   // for compatibility
 				$user->getSuffix(),
 				$user->getGender(),
 				$user->getEmail(),
@@ -253,7 +253,7 @@ class PKPUserDAO extends DAO {
 	}
 
 	function getLocaleFieldNames() {
-		return array('biography', 'signature', 'gossip', 'affiliation');
+		return array('firstName', 'middleName', 'lastName', 'biography', 'signature', 'gossip', 'affiliation');
 	}
 
 	function updateLocaleFields(&$user) {
@@ -307,10 +307,10 @@ class PKPUserDAO extends DAO {
 				$user->getUsername(),
 				$user->getPassword(),
 				$user->getSalutation(),
-				$user->getFirstName(),
-				$user->getMiddleName(),
+				$user->getFirstName(null),  // for compatibility
+				$user->getMiddleName(null), // for compatibility
 				$user->getInitials(),
-				$user->getLastName(),
+				$user->getLastName(null),   // for compatibility
 				$user->getSuffix(),
 				$user->getGender(),
 				$user->getEmail(),
