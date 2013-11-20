@@ -121,12 +121,16 @@ class PKPAuthorDAO extends DAO {
 	 * @return Author
 	 */
 	function &_returnAuthorFromRow(&$row) {
+		// error_log( __FUNCTION__ . ' at ' . __FILE__ . ':' . __LINE__ );
+		//error_log( var_export(debug_backtrace(2), true) );
+		// PHP Fatal error:  Nesting level too deep - recursive dependency?
+
 		$author = $this->newDataObject();
 		$author->setId($row['author_id']);
 		$author->setSubmissionId($row['submission_id']);
-		$author->setFirstName($row['first_name']);
-		$author->setMiddleName($row['middle_name']);
-		$author->setLastName($row['last_name']);
+		//$author->setFirstName($row['first_name'], null);
+		//$author->setMiddleName($row['middle_name'], null);
+		//$author->setLastName($row['last_name'], null);
 		$author->setSuffix($row['suffix']);
 		$author->setCountry($row['country']);
 		$author->setEmail($row['email']);
@@ -136,6 +140,7 @@ class PKPAuthorDAO extends DAO {
 		$author->setSequence($row['seq']);
 
 		$this->getDataObjectSettings('author_settings', 'author_id', $row['author_id'], $author);
+		//error_log( "//////////////\n" . __FUNCTION__ . ' at ' . __FILE__ . ':' . __LINE__ . "\n\$author =\n" . var_export($author, true) );
 
 		HookRegistry::call('AuthorDAO::_returnAuthorFromRow', array(&$author, &$row));
 		return $author;
@@ -151,9 +156,6 @@ class PKPAuthorDAO extends DAO {
 		$author = $this->newDataObject();
 		$author->setId($row['author_id']);
 		$author->setSubmissionId($row['submission_id']);
-		$author->setFirstName($row['first_name']);
-		$author->setMiddleName($row['middle_name']);
-		$author->setLastName($row['last_name']);
 		$author->setSuffix($row['suffix']);
 		$author->setCountry($row['country']);
 		$author->setEmail($row['email']);
@@ -162,7 +164,19 @@ class PKPAuthorDAO extends DAO {
 		$author->setPrimaryContact($row['primary_contact']);
 		$author->setSequence($row['seq']);
 
-		$author->setAffiliation($row['affiliation_l'], $row['locale']);
+		// FIXME Need to localize
+		//$author->setFirstName( $row['first_name'],  null);
+		//$author->setMiddleName($row['middle_name'], null);
+		//$author->setLastName(  $row['last_name'],   null);
+
+		$author->setFirstName(  $row[ 'first_name_l'],  $row['fn_locale']);
+		$author->setFirstName(  $row[ 'first_name_pl'], $row['fn_primary_locale']);
+		$author->setMiddleName( $row['middle_name_l'],  $row['mn_locale']);
+		$author->setMiddleName( $row['middle_name_pl'], $row['mn_primary_locale']);
+		$author->setLastName(   $row[  'last_name_l'],  $row['ln_locale']);
+		$author->setLastName(   $row[  'last_name_pl'], $row['ln_primary_locale']);
+
+		$author->setAffiliation($row['affiliation_l'],  $row['locale']);
 		$author->setAffiliation($row['affiliation_pl'], $row['primary_locale']);
 
 		HookRegistry::call('AuthorDAO::_returnSimpleAuthorFromRow', array(&$author, &$row));
@@ -182,7 +196,7 @@ class PKPAuthorDAO extends DAO {
 	 * @return array
 	 */
 	function getLocaleFieldNames() {
-		return array('biography', 'competingInterests', 'affiliation');
+		return array('firstName', 'middleName', 'lastName', 'biography', 'competingInterests', 'affiliation');
 	}
 
 	/**

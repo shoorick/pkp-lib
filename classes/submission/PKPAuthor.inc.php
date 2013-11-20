@@ -21,6 +21,34 @@ class PKPAuthor extends DataObject {
 		parent::DataObject();
 	}
 
+	///**
+	// * Get a piece of data for this object, localized to the current
+	// * locale if possible.
+	// * @param $key string
+	// * @param $preferredLocale string
+	// * @return mixed
+	// */
+	//// copied from lib/pkp/classes/submission/Submission.inc.php
+	//function &getLocalizedData($key, $preferredLocale = null) {
+	//	if (is_null($preferredLocale)) $preferredLocale = AppLocale::getLocale();
+	//	$localePrecedence = array($preferredLocale, $this->getLocale());
+	//	foreach ($localePrecedence as $locale) {
+	//		if (empty($locale)) continue;
+	//		$value =& $this->getData($key, $locale);
+	//		if (!empty($value)) return $value;
+	//		unset($value);
+	//	}
+	//
+	//	// Fallback: Get the first available piece of data.
+	//	$data =& $this->getData($key, null);
+	//	if (!empty($data)) return $data[array_shift(array_keys($data))];
+	//
+	//	// No data available; return null.
+	//	unset($data);
+	//	$data = null;
+	//	return $data;
+	//}
+
 	/**
 	 * Get the author's complete name.
 	 * Includes first name, middle name (if applicable), and last name.
@@ -29,13 +57,35 @@ class PKPAuthor extends DataObject {
 	 * @return string
 	 */
 	function getFullName($lastFirst = false) {
+		$locale = AppLocale::getLocale();
+		//error_log( __FUNCTION__ . ' at ' . __FILE__ . ':' . __LINE__ . "\nlocale = $locale");
 		if ($lastFirst)
-			return $this->getData('lastName') . ', ' . $this->getData('firstName')
-			. ($this->getData('middleName') != '' ? ' ' . $this->getData('middleName') : '');
+			return $this->getData('lastName', $locale) . ', '
+			. $this->getData('firstName', $locale)
+			. ($this->getData('middleName', $locale) != '' ? ' ' . $this->getData('middleName', $locale) : '');
 		else
-			return $this->getData('firstName') . ' '
-			. ($this->getData('middleName') != '' ? $this->getData('middleName') . ' ' : '')
-			.  $this->getData('lastName')
+			return $this->getData('firstName', $locale) . ' '
+			. ($this->getData('middleName', $locale) != '' ? $this->getData('middleName', $locale) . ' ' : '')
+			.  $this->getData('lastName', $locale)
+			. ($this->getData('suffix') != '' ? ', ' . $this->getData('suffix') : '');
+	}
+
+	/**
+	 * Get the author's localized complete name.
+	 * Includes first name, middle name (if applicable), and last name.
+	 * @param $lastFirst boolean False / default: Firstname Middle Lastname
+	 * 	If true: Lastname, Firstname Middlename
+	 * @return string
+	 */
+	function getLocalizedFullName($lastFirst = false) {
+		//error_log( __FUNCTION__ . ' at ' . __FILE__ . ':' . __LINE__ );
+		if ($lastFirst)
+			return $this->getLocalizedData('lastName') . ', ' . $this->getLocalizedData('firstName')
+			. ($this->getLocalizedData('middleName') != '' ? ' ' . $this->getLocalizedData('middleName') : '');
+		else
+			return $this->getLocalizedData('firstName') . ' '
+			. ($this->getLocalizedData('middleName') != '' ? $this->getLocalizedData('middleName') . ' ' : '')
+			.  $this->getLocalizedData('lastName')
 			. ($this->getData('suffix') != '' ? ', ' . $this->getData('suffix') : '');
 	}
 
@@ -96,34 +146,54 @@ class PKPAuthor extends DataObject {
 
 	/**
 	 * Get first name.
+	 * @param $locale string
 	 * @return string
 	 */
-	function getFirstName() {
-		return $this->getData('firstName');
+	function getFirstName($locale) {
+		return $this->getData('firstName', $locale);
 	}
 
 	/**
 	 * Set first name.
 	 * @param $firstName string
+	 * @param $locale string
 	 */
-	function setFirstName($firstName) {
-		return $this->setData('firstName', $firstName);
+	function setFirstName($firstName, $locale) {
+		return $this->setData('firstName', $firstName, $locale);
+	}
+
+	/**
+	 * Get localized first name.
+	 * @return string
+	 */
+	function getLocalizedFirstName() {
+		return $this->getLocalizedData('firstName');
 	}
 
 	/**
 	 * Get middle name.
+	 * @param $locale string
 	 * @return string
 	 */
-	function getMiddleName() {
-		return $this->getData('middleName');
+	function getMiddleName($locale) {
+		return $this->getData('middleName', $locale);
 	}
 
 	/**
 	 * Set middle name.
 	 * @param $middleName string
+	 * @param $locale string
 	 */
-	function setMiddleName($middleName) {
-		return $this->setData('middleName', $middleName);
+	function setMiddleName($middleName, $locale) {
+		return $this->setData('middleName', $middleName, $locale);
+	}
+
+	/**
+	 * Get localized middle name.
+	 * @return string
+	 */
+	function getLocalizedMiddleName() {
+		return $this->getLocalizedData('middleName');
 	}
 
 	/**
@@ -144,18 +214,28 @@ class PKPAuthor extends DataObject {
 
 	/**
 	 * Get last name.
+	 * @param $locale string
 	 * @return string
 	 */
-	function getLastName() {
-		return $this->getData('lastName');
+	function getLastName($locale) {
+		return $this->getData('lastName', $locale);
 	}
 
 	/**
 	 * Set last name.
+	 * @param $locale string
 	 * @param $lastName string
 	 */
-	function setLastName($lastName) {
-		return $this->setData('lastName', $lastName);
+	function setLastName($lastName, $locale) {
+		return $this->setData('lastName', $lastName, $locale);
+	}
+
+	/**
+	 * Get localized last name.
+	 * @return string
+	 */
+	function getLocalizedLastName() {
+		return $this->getLocalizedData('lastName');
 	}
 
 	/**
