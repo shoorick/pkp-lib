@@ -650,13 +650,35 @@ class PKPUser extends DataObject {
 	 * @return string
 	 */
 	function getFullName($lastFirst = false) {
+		$locale = AppLocale::getLocale(); // FIXME get from ()
 		$salutation = $this->getData('salutation');
-		$firstName = $this->getData('firstName');
-		$middleName = $this->getData('middleName');
-		$lastName = $this->getData('lastName');
-		$suffix = $this->getData('suffix');
+		$firstName  = $this->getData('firstName', $locale);
+		$middleName = $this->getData('middleName', $locale);
+		$lastName   = $this->getData('lastName', $locale);
+		$suffix     = $this->getData('suffix');
 		if ($lastFirst) {
 			return "$lastName, " . ($salutation != ''?"$salutation ":'') . "$firstName" . ($middleName != ''?" $middleName":'');
+		} else {
+			return ($salutation != ''?"$salutation ":'') . "$firstName " . ($middleName != ''?"$middleName ":'') . $lastName . ($suffix != ''?", $suffix":'');
+		}
+	}
+
+	/**
+	 * Get the localized user's complete name.
+	 * Includes first name, middle name (if applicable), and last name.
+	 * The suffix is only included when the name is not reversed with $lastFirst
+	 * @param $lastFirst boolean return in "LastName, FirstName" format
+	 * @return string
+	 */
+	function getLocalizedFullName($lastFirst = false) {
+		$salutation = $this->getData('salutation');
+		$firstName  = $this->getLocalizedData('firstName');
+		$middleName = $this->getLocalizedData('middleName');
+		$lastName   = $this->getLocalizedData('lastName');
+		$suffix     = $this->getData('suffix');
+		if ($lastFirst) {
+			return "$lastName, " . ($salutation != ''?"$salutation ":'')
+			. "$firstName" . ($middleName != ''?" $middleName":'');
 		} else {
 			return ($salutation != ''?"$salutation ":'') . "$firstName " . ($middleName != ''?"$middleName ":'') . $lastName . ($suffix != ''?", $suffix":'');
 		}

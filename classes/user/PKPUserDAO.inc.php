@@ -173,10 +173,7 @@ class PKPUserDAO extends DAO {
 		$user->setUsername($row['username']);
 		$user->setPassword($row['password']);
 		$user->setSalutation($row['salutation']);
-		$user->setFirstName($row['first_name'],   null);
-		$user->setMiddleName($row['middle_name'], null);
 		$user->setInitials($row['initials']);
-		$user->setLastName($row['last_name'],     null);
 		$user->setSuffix($row['suffix']);
 		$user->setGender($row['gender']);
 		$user->setEmail($row['email']);
@@ -186,7 +183,11 @@ class PKPUserDAO extends DAO {
 		$user->setMailingAddress($row['mailing_address']);
 		$user->setBillingAddress($row['billing_address']);
 		$user->setCountry($row['country']);
-		$user->setLocales(isset($row['locales']) && !empty($row['locales']) ? explode(':', $row['locales']) : array());
+		$user->setLocales(
+			isset($row['locales']) && !empty($row['locales'])
+			? explode(':', $row['locales'])
+			: array()
+		);
 		$user->setDateLastEmail($this->datetimeFromDB($row['date_last_email']));
 		$user->setDateRegistered($this->datetimeFromDB($row['date_registered']));
 		$user->setDateValidated($this->datetimeFromDB($row['date_validated']));
@@ -197,6 +198,45 @@ class PKPUserDAO extends DAO {
 		$user->setAuthId($row['auth_id']);
 		$user->setAuthStr($row['auth_str']);
 		$user->setInlineHelp($row['inline_help']);
+
+		
+		//error_log(var_export($row, true));
+		//echo '<pre style="background:#fed">'; print_r($row); echo '</pre>';
+		//echo '<pre style="background:#def">'; echo($row['last_name_l']); echo '</pre>';
+		//error_log('[last_name_l] = ' . $row['last_name_l']);
+		
+		// Localized names
+		if (array_key_exists('first_name_l',  $row) && isset($row['first_name_l' ])
+		&&  array_key_exists('first_name_pl', $row) && isset($row['first_name_pl'])
+		) {
+			$user->setFirstName(  $row[ 'first_name_l'],  $row['fn_locale']);
+			$user->setFirstName(  $row[ 'first_name_pl'], $row['fn_primary_locale']);
+		}
+		else
+			$user->setFirstName(  $row['first_name'],  null); // Fallback
+		
+		if (array_key_exists('middle_name_l',  $row) && isset($row['middle_name_l' ])
+		&&  array_key_exists('middle_name_pl', $row) && isset($row['middle_name_pl'])
+		) {
+			$user->setMiddleName( $row['middle_name_l'],  $row['mn_locale']);
+			$user->setMiddleName( $row['middle_name_pl'], $row['mn_primary_locale']);
+		}
+		else
+			$user->setMiddleName( $row['middle_name'], null); // Fallback
+		
+		if (array_key_exists('last_name_l',  $row) && isset($row['last_name_l' ])
+		&&  array_key_exists('last_name_pl', $row) && isset($row['last_name_pl'])
+		) {
+			error_log(__FUNCTION__
+				. ' lastName: ' . $row['last_name_l']. '/' . $row['fn_locale']
+				. ', ' . $row['last_name_pl'] . '/' . $row['fn_primary_locale']
+			);
+			$user->setMiddleName( $row['last_name_l'],  $row['ln_locale']);
+			$user->setMiddleName( $row['last_name_pl'], $row['ln_primary_locale']);
+		}
+		else
+			$user->setMiddleName( $row['last_name'], null); // Fallback
+		
 
 		if ($callHook) HookRegistry::call('UserDAO::_returnUserFromRow', array(&$user, &$row));
 
@@ -252,10 +292,18 @@ class PKPUserDAO extends DAO {
 		return $user->getId();
 	}
 
+	/**
+	 * Get field names for which data is localized.
+	 * @return array
+	 */
 	function getLocaleFieldNames() {
 		return array('firstName', 'middleName', 'lastName', 'biography', 'signature', 'gossip', 'affiliation');
 	}
 
+	/**
+	 * Update the localized data for this object
+	 * @param $user object
+	 */
 	function updateLocaleFields(&$user) {
 		$this->updateDataObjectSettings('user_settings', $user, array(
 			'user_id' => (int) $user->getId()
@@ -374,6 +422,7 @@ class PKPUserDAO extends DAO {
 		if($result->RecordCount() == 0) {
 			$returner = false;
 		} else {
+			// FIXME Use names rather than numbers
 			$returner = $result->fields[0] . ' ' . (empty($result->fields[1]) ? '' : $result->fields[1] . ' ') . $result->fields[2] . (empty($result->fields[3]) ? '' : ', ' . $result->fields[3]);
 		}
 
