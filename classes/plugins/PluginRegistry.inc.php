@@ -217,7 +217,7 @@ class PluginRegistry {
 		// Try the plug-in wrapper first for backwards
 		// compatibility.
 		$pluginWrapper = "$pluginPath/index.php";
-		if (file_exists($pluginWrapper)) {
+		if (is_dir($pluginPath) && file_exists($pluginWrapper)) {
 			$plugin = include($pluginWrapper);
 			if ($classToCheck) {
 				assert(is_a($plugin, $classToCheck));
@@ -226,7 +226,7 @@ class PluginRegistry {
 			// Try the well-known plug-in class name next.
 			$pluginClassName = ucfirst($file).ucfirst($category).'Plugin';
 			$pluginClassFile = $pluginClassName.'.inc.php';
-			if (file_exists("$pluginPath/$pluginClassFile")) {
+			if (is_dir($pluginPath) && file_exists("$pluginPath/$pluginClassFile")) {
 				// Try to instantiate the plug-in class.
 				$pluginPackage = 'plugins.'.$category.'.'.$file;
 				$plugin =& instantiate($pluginPackage.'.'.$pluginClassName, $pluginClassName, $pluginPackage, 'register');
