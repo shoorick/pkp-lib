@@ -128,35 +128,54 @@ class PKPUser extends DataObject {
 
 	/**
 	 * Get first name.
+	 * @param $locale string
 	 * @return string
 	 */
-	function getFirstName() {
-		return $this->getData('firstName');
+	function getFirstName($locale) {
+		return $this->getData('firstName', $locale);
 	}
 
 	/**
 	 * Set first name.
 	 * @param $firstName string
+	 * @param $locale string
 	 */
-	function setFirstName($firstName)
-	{
-		return $this->setData('firstName', $firstName);
+	function setFirstName($firstName, $locale) {
+		return $this->setData('firstName', $firstName, $locale);
+	}
+
+	/**
+	 * Get localized first name.
+	 * @return string
+	 */
+	function getLocalizedFirstName() {
+		return $this->getLocalizedData('firstName');
 	}
 
 	/**
 	 * Get middle name.
+	 * @param $locale string
 	 * @return string
 	 */
-	function getMiddleName() {
-		return $this->getData('middleName');
+	function getMiddleName($locale) {
+		return $this->getData('middleName', $locale);
 	}
 
 	/**
 	 * Set middle name.
 	 * @param $middleName string
+	 * @param $locale string
 	 */
-	function setMiddleName($middleName) {
-		return $this->setData('middleName', $middleName);
+	function setMiddleName($middleName, $locale) {
+		return $this->setData('middleName', $middleName, $locale);
+	}
+
+	/**
+	 * Get localized middle name.
+	 * @return string
+	 */
+	function getLocalizedMiddleName() {
+		return $this->getLocalizedData('middleName');
 	}
 
 	/**
@@ -177,18 +196,28 @@ class PKPUser extends DataObject {
 
 	/**
 	 * Get last name.
+	 * @param $locale string
 	 * @return string
 	 */
-	function getLastName() {
-		return $this->getData('lastName');
+	function getLastName($locale) {
+		return $this->getData('lastName', $locale);
 	}
 
 	/**
 	 * Set last name.
 	 * @param $lastName string
+	 * @param $locale string
 	 */
-	function setLastName($lastName) {
-		return $this->setData('lastName', $lastName);
+	function setLastName($lastName, $locale) {
+		return $this->setData('lastName', $lastName, $locale);
+	}
+
+	/**
+	 * Get localized last name.
+	 * @return string
+	 */
+	function getLocalizedLastName() {
+		return $this->getLocalizedData('lastName');
 	}
 
 	/**
@@ -621,24 +650,68 @@ class PKPUser extends DataObject {
 	 * @return string
 	 */
 	function getFullName($lastFirst = false) {
+		$locale = AppLocale::getLocale(); // FIXME get from ()
 		$salutation = $this->getData('salutation');
-		$firstName = $this->getData('firstName');
-		$middleName = $this->getData('middleName');
-		$lastName = $this->getData('lastName');
-		$suffix = $this->getData('suffix');
+		$firstName  = $this->getData('firstName',  $locale);
+		$middleName = $this->getData('middleName', $locale);
+		$lastName   = $this->getData('lastName',   $locale);
+		$suffix     = $this->getData('suffix');
 		if ($lastFirst) {
-			return "$lastName, " . ($salutation != ''?"$salutation ":'') . "$firstName" . ($middleName != ''?" $middleName":'');
-		} else {
-			return ($salutation != ''?"$salutation ":'') . "$firstName " . ($middleName != ''?"$middleName ":'') . $lastName . ($suffix != ''?", $suffix":'');
+			return "$lastName, "
+				. ($salutation != '' ? "$salutation " : '')
+				. "$firstName"
+				. ($middleName != '' ? " $middleName" : '');
+		}
+		else {
+			return
+				($salutation != '' ? "$salutation " : '')
+				. "$firstName "
+				. ($middleName != '' ? "$middleName " : '')
+				. $lastName
+				. ($suffix != '' ? ", $suffix" : '');
 		}
 	}
 
+	/**
+	 * Get the localized user's complete name.
+	 * Includes first name, middle name (if applicable), and last name.
+	 * The suffix is only included when the name is not reversed with $lastFirst
+	 * @param $lastFirst boolean return in "LastName, FirstName" format
+	 * @return string
+	 */
+	function getLocalizedFullName($lastFirst = false) {
+		$salutation = $this->getData('salutation');
+		$firstName  = $this->getLocalizedData('firstName');
+		$middleName = $this->getLocalizedData('middleName');
+		$lastName   = $this->getLocalizedData('lastName');
+		$suffix     = $this->getData('suffix');
+
+		if ($lastFirst) {
+			return "$lastName, "
+				. ($salutation != '' ? "$salutation " : '')
+				. "$firstName"
+				. ($middleName != '' ? " $middleName" : '');
+		}
+		else {
+			return
+				($salutation != '' ? "$salutation " : '')
+				. "$firstName "
+				. ($middleName != '' ? "$middleName " : '')
+				. $lastName
+				. ($suffix != '' ? ", $suffix" : '');
+		}
+	}
+
+
 	function getContactSignature() {
-		$signature = $this->getFullName();
 		AppLocale::requireComponents(LOCALE_COMPONENT_PKP_USER);
-		if ($a = $this->getLocalizedAffiliation()) $signature .= "\n" . $a;
-		if ($p = $this->getPhone()) $signature .= "\n" . __('user.phone') . ' ' . $p;
-		if ($f = $this->getFax()) $signature .= "\n" . __('user.fax') . ' ' . $f;
+		$signature = $this->getLocalizedFullName();
+		if ($a = $this->getLocalizedAffiliation())
+			$signature .= "\n" . $a;
+		if ($p = $this->getPhone())
+			$signature .= "\n" . __('user.phone') . ' ' . $p;
+		if ($f = $this->getFax())
+			$signature .= "\n" . __('user.fax') . ' ' . $f;
 		$signature .= "\n" . $this->getEmail();
 		return $signature;
 	}

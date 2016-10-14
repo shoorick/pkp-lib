@@ -82,6 +82,11 @@ class PKPLocale {
 		if (!isset($locale)) $locale = AppLocale::getLocale();
 		if (($key = trim($key)) == '') return '';
 
+		foreach( $params as $k => $v ) {
+			if (is_array($v))
+				$params[$k] = $v[$locale];
+		}
+
 		$localeFiles =& AppLocale::getLocaleFiles($locale);
 		$value = '';
 		for ($i = count($localeFiles) - 1 ; $i >= 0 ; $i --) {

@@ -70,7 +70,10 @@ class PKPUserDAO extends DAO {
 	 */
 	function &getByUsername($username, $allowDisabled = true) {
 		$result =& $this->retrieve(
-			'SELECT * FROM users WHERE username = ?' . ($allowDisabled?'':' AND disabled = 0'),
+			'SELECT *
+			FROM users
+			WHERE username = ?'
+			. ($allowDisabled ? '' : ' AND disabled = 0'),
 			array($username)
 		);
 
@@ -174,10 +177,7 @@ class PKPUserDAO extends DAO {
 		$user->setUsername($row['username']);
 		$user->setPassword($row['password']);
 		$user->setSalutation($row['salutation']);
-		$user->setFirstName($row['first_name']);
-		$user->setMiddleName($row['middle_name']);
 		$user->setInitials($row['initials']);
-		$user->setLastName($row['last_name']);
 		$user->setSuffix($row['suffix']);
 		$user->setGender($row['gender']);
 		$user->setEmail($row['email']);
@@ -187,17 +187,23 @@ class PKPUserDAO extends DAO {
 		$user->setMailingAddress($row['mailing_address']);
 		$user->setBillingAddress($row['billing_address']);
 		$user->setCountry($row['country']);
-		$user->setLocales(isset($row['locales']) && !empty($row['locales']) ? explode(':', $row['locales']) : array());
-		$user->setDateLastEmail($this->datetimeFromDB($row['date_last_email']));
+		$user->setLocales(
+			isset($row['locales']) && !empty($row['locales'])
+			? explode(':', $row['locales'])
+			: array()
+		);
+		$user->setDateLastEmail( $this->datetimeFromDB($row['date_last_email']));
 		$user->setDateRegistered($this->datetimeFromDB($row['date_registered']));
-		$user->setDateValidated($this->datetimeFromDB($row['date_validated']));
-		$user->setDateLastLogin($this->datetimeFromDB($row['date_last_login']));
+		$user->setDateValidated( $this->datetimeFromDB($row['date_validated' ]));
+		$user->setDateLastLogin( $this->datetimeFromDB($row['date_last_login']));
 		$user->setMustChangePassword($row['must_change_password']);
 		$user->setDisabled($row['disabled']);
 		$user->setDisabledReason($row['disabled_reason']);
 		$user->setAuthId($row['auth_id']);
 		$user->setAuthStr($row['auth_str']);
 		$user->setInlineHelp($row['inline_help']);
+
+		// Localized fields will be setted in _returnUserFromRowWithData
 
 		if ($callHook) HookRegistry::call('UserDAO::_returnUserFromRow', array(&$user, &$row));
 
@@ -216,19 +222,26 @@ class PKPUserDAO extends DAO {
 			$user->setDateLastLogin(Core::getCurrentDate());
 		}
 		$this->update(
-			sprintf('INSERT INTO users
-				(username, password, salutation, first_name, middle_name, initials, last_name, suffix, gender, email, url, phone, fax, mailing_address, billing_address, country, locales, date_last_email, date_registered, date_validated, date_last_login, must_change_password, disabled, disabled_reason, auth_id, auth_str, inline_help)
+			sprintf(
+				'INSERT INTO users
+				(username, password, salutation, initials, suffix, gender,
+					email, url, phone, fax, mailing_address, billing_address,
+					country, locales,
+					date_last_email, date_registered, date_validated, date_last_login,
+					must_change_password, disabled, disabled_reason,
+					auth_id, auth_str, inline_help)
 				VALUES
-				(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, %s, %s, %s, %s, ?, ?, ?, ?, ?, ?)',
-				$this->datetimeToDB($user->getDateLastEmail()), $this->datetimeToDB($user->getDateRegistered()), $this->datetimeToDB($user->getDateValidated()), $this->datetimeToDB($user->getDateLastLogin())),
+				(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, %s, %s, %s, %s, ?, ?, ?, ?, ?, ?)',
+				$this->datetimeToDB($user->getDateLastEmail()),
+				$this->datetimeToDB($user->getDateRegistered()),
+				$this->datetimeToDB($user->getDateValidated()),
+				$this->datetimeToDB($user->getDateLastLogin())
+			),
 			array(
 				$user->getUsername(),
 				$user->getPassword(),
 				$user->getSalutation(),
-				$user->getFirstName(),
-				$user->getMiddleName(),
 				$user->getInitials(),
-				$user->getLastName(),
 				$user->getSuffix(),
 				$user->getGender(),
 				$user->getEmail(),
@@ -242,7 +255,7 @@ class PKPUserDAO extends DAO {
 				$user->getMustChangePassword() ? 1 : 0,
 				$user->getDisabled() ? 1 : 0,
 				$user->getDisabledReason(),
-				$user->getAuthId()=='' ? null : (int) $user->getAuthId(),
+				$user->getAuthId() == '' ? null : (int) $user->getAuthId(),
 				$user->getAuthStr(),
 				(int) $user->getInlineHelp(),
 			)
@@ -253,10 +266,24 @@ class PKPUserDAO extends DAO {
 		return $user->getId();
 	}
 
+	/**
+	* Get field names for which data is localized.
+	* @return array
+	*/
 	function getLocaleFieldNames() {
-		return array_merge(parent::getLocaleFieldNames(), array('biography', 'signature', 'gossip', 'affiliation'));
+		return array_merge(
+			parent::getLocaleFieldNames(),
+			array(
+				'firstName', 'middleName', 'lastName',
+				'biography', 'signature', 'gossip', 'affiliation'
+			)
+		);
 	}
 
+	/**
+	 * Update the localized data for this object
+	 * @param $user object
+	 */
 	function updateLocaleFields(&$user) {
 		$this->updateDataObjectSettings('user_settings', $user, array(
 			'user_id' => (int) $user->getId()
@@ -275,14 +302,12 @@ class PKPUserDAO extends DAO {
 		$this->updateLocaleFields($user);
 
 		return $this->update(
-			sprintf('UPDATE	users
+			sprintf(
+				'UPDATE	users
 				SET	username = ?,
 					password = ?,
 					salutation = ?,
-					first_name = ?,
-					middle_name = ?,
 					initials = ?,
-					last_name = ?,
 					suffix = ?,
 					gender = ?,
 					email = ?,
@@ -303,15 +328,15 @@ class PKPUserDAO extends DAO {
 					auth_str = ?,
 					inline_help = ?
 				WHERE	user_id = ?',
-				$this->datetimeToDB($user->getDateLastEmail()), $this->datetimeToDB($user->getDateValidated()), $this->datetimeToDB($user->getDateLastLogin())),
+				$this->datetimeToDB($user->getDateLastEmail()),
+				$this->datetimeToDB($user->getDateValidated()),
+				$this->datetimeToDB($user->getDateLastLogin())
+			),
 			array(
 				$user->getUsername(),
 				$user->getPassword(),
 				$user->getSalutation(),
-				$user->getFirstName(),
-				$user->getMiddleName(),
 				$user->getInitials(),
-				$user->getLastName(),
 				$user->getSuffix(),
 				$user->getGender(),
 				$user->getEmail(),
@@ -325,7 +350,7 @@ class PKPUserDAO extends DAO {
 				$user->getMustChangePassword() ? 1 : 0,
 				$user->getDisabled() ? 1 : 0,
 				$user->getDisabledReason(),
-				$user->getAuthId()=='' ? null : (int) $user->getAuthId(),
+				$user->getAuthId() == '' ? null : (int) $user->getAuthId(),
 				$user->getAuthStr(),
 				(int) $user->getInlineHelp(),
 				(int) $user->getId(),
@@ -367,15 +392,92 @@ class PKPUserDAO extends DAO {
 	 * @return string
 	 */
 	function getUserFullName($userId, $allowDisabled = true) {
+		// FIXME Read settings instead of hard coding
+		$appLocalePrimaryLocale = 'ru_RU'; // AppLocale::getPrimaryLocale(); // calls getById()
+		$appLocaleLocale        = 'en_US'; // AppLocale::getLocale();
+
+		$paramArray = array(
+			'firstName',   $appLocalePrimaryLocale,
+			'firstName',   $appLocaleLocale,
+			'middleName',  $appLocalePrimaryLocale,
+			'middleName',  $appLocaleLocale,
+			'lastName',    $appLocalePrimaryLocale,
+			'lastName',    $appLocaleLocale,
+			(int) $userId
+		);
+
 		$result =& $this->retrieve(
-			'SELECT first_name, middle_name, last_name, suffix FROM users WHERE user_id = ?' . ($allowDisabled?'':' AND disabled = 0'),
-			array((int) $userId)
+			'SELECT DISTINCT u.user_id, u.suffix,
+				usfnl.locale  fn_locale,
+				usfnpl.locale fn_primary_locale,
+				usmnl.locale  mn_locale,
+				usmnpl.locale mn_primary_locale,
+				uslnl.locale  ln_locale,
+				uslnpl.locale ln_primary_locale,
+				CASE WHEN usfnl.setting_value = \'\'
+					THEN NULL
+					ELSE SUBSTRING(usfnl.setting_value  FROM 1 FOR 255)
+					END AS first_name_l,
+				CASE WHEN usfnpl.setting_value = \'\'
+					THEN NULL
+					ELSE SUBSTRING(usfnpl.setting_value FROM 1 FOR 255)
+					END AS first_name_pl,
+				CASE WHEN usmnl.setting_value = \'\'
+					THEN NULL
+					ELSE SUBSTRING(usmnl.setting_value  FROM 1 FOR 255)
+					END AS middle_name_l,
+				CASE WHEN usmnpl.setting_value = \'\'
+					THEN NULL
+					ELSE SUBSTRING(usmnpl.setting_value FROM 1 FOR 255)
+					END AS middle_name_pl,
+				CASE WHEN uslnl.setting_value = \'\'
+					THEN NULL
+					ELSE SUBSTRING(uslnl.setting_value  FROM 1 FOR 255)
+					END AS last_name_l,
+				CASE WHEN uslnpl.setting_value = \'\'
+					THEN NULL
+					ELSE SUBSTRING(uslnpl.setting_value FROM 1 FOR 255)
+					END AS last_name_pl
+			FROM users u
+				LEFT JOIN user_settings usfnpl
+					ON (u.user_id = usfnpl.user_id
+						AND usfnpl.setting_name = ?
+						AND usfnpl.locale = ?)
+				LEFT JOIN user_settings usfnl
+					ON (u.user_id = usfnl.user_id
+						AND usfnl.setting_name = ?
+						AND usfnl.locale = ?)
+				LEFT JOIN user_settings usmnpl
+					ON (u.user_id = usmnpl.user_id
+						AND usmnpl.setting_name = ?
+						AND usmnpl.locale = ?)
+				LEFT JOIN user_settings usmnl
+					ON (u.user_id = usmnl.user_id
+						AND usmnl.setting_name = ?
+						AND usmnl.locale = ?)
+				LEFT JOIN user_settings uslnpl
+					ON (u.user_id = uslnpl.user_id
+						AND uslnpl.setting_name = ?
+						AND uslnpl.locale = ?)
+				LEFT JOIN user_settings uslnl
+					ON (u.user_id = uslnl.user_id
+						AND uslnl.setting_name = ?
+						AND uslnl.locale = ?)
+			WHERE u.user_id = ?'
+			. ($allowDisabled ? '' : ' AND disabled = 0'),
+			$paramArray
 		);
 
 		if($result->RecordCount() == 0) {
 			$returner = false;
-		} else {
-			$returner = $result->fields[0] . ' ' . (empty($result->fields[1]) ? '' : $result->fields[1] . ' ') . $result->fields[2] . (empty($result->fields[3]) ? '' : ', ' . $result->fields[3]);
+		}
+		else {
+			// FIXME Use names rather than numbers
+			$returner
+				= $result->fields[0] . ' '
+				. (empty($result->fields[2]) ? '' : $result->fields[2] . ' ')
+				. $result->fields[3]
+				. (empty($result->fields[4]) ? '' : ', ' . $result->fields[4]);
 		}
 
 		$result->Close();
@@ -392,7 +494,10 @@ class PKPUserDAO extends DAO {
 	 */
 	function getUserEmail($userId, $allowDisabled = true) {
 		$result =& $this->retrieve(
-			'SELECT email FROM users WHERE user_id = ?' . ($allowDisabled?'':' AND disabled = 0'),
+			'SELECT email
+			FROM users
+			WHERE user_id = ?'
+			. ($allowDisabled ? '' : ' AND disabled = 0'),
 			array((int) $userId)
 		);
 
@@ -418,7 +523,10 @@ class PKPUserDAO extends DAO {
 	 * @return array matching Users
 	 */
 
-	function &getUsersByField($field = USER_FIELD_NONE, $match = null, $value = null, $allowDisabled = true, $dbResultRange = null, $sortBy = null, $sortDirection = SORT_DIRECTION_ASC) {
+	function &getUsersByField($field = USER_FIELD_NONE, $match = null,
+		$value = null, $allowDisabled = true, $dbResultRange = null,
+		$sortBy = null, $sortDirection = SORT_DIRECTION_ASC
+	) {
 		$sql = 'SELECT DISTINCT u.* FROM users u';
 		switch ($field) {
 			case USER_FIELD_USERID:
@@ -426,7 +534,9 @@ class PKPUserDAO extends DAO {
 				$var = (int) $value;
 				break;
 			case USER_FIELD_USERNAME:
-				$sql .= ' WHERE LOWER(u.username) ' . ($match == 'is' ? '=' : 'LIKE') . ' LOWER(?)';
+				$sql .= ' WHERE LOWER(u.username) '
+					. ($match == 'is' ? '=' : 'LIKE')
+					. ' LOWER(?)';
 				$var = $match == 'is' ? $value : "%$value%";
 				break;
 			case USER_FIELD_INITIAL:
@@ -435,34 +545,53 @@ class PKPUserDAO extends DAO {
 				break;
 			case USER_FIELD_INTERESTS:
 				$interestDao =& DAORegistry::getDAO('InterestDAO');  // Loaded to ensure interest constant is in namespace
-				$sql .=', controlled_vocabs cv, controlled_vocab_entries cve, controlled_vocab_entry_settings cves, user_interests ui
-					WHERE cv.symbolic = \'' . CONTROLLED_VOCAB_INTEREST .  '\' AND cve.controlled_vocab_id = cv.controlled_vocab_id
-					AND cves.controlled_vocab_entry_id = cve.controlled_vocab_entry_id AND LOWER(cves.setting_value) ' . ($match == 'is' ? '=' : 'LIKE') . ' LOWER(?)
-					AND ui.user_id = u.user_id AND cve.controlled_vocab_entry_id = ui.controlled_vocab_entry_id';
+				$sql .=', controlled_vocabs cv, controlled_vocab_entries cve,
+						controlled_vocab_entry_settings cves, user_interests ui
+					WHERE cv.symbolic = \'' . CONTROLLED_VOCAB_INTEREST .  '\'
+						AND cve.controlled_vocab_id = cv.controlled_vocab_id
+						AND cves.controlled_vocab_entry_id = cve.controlled_vocab_entry_id
+						AND LOWER(cves.setting_value) '
+						. ($match == 'is' ? '=' : 'LIKE') . ' LOWER(?)
+						AND ui.user_id = u.user_id
+						AND cve.controlled_vocab_entry_id = ui.controlled_vocab_entry_id';
 				$var = $match == 'is' ? $value : "%$value%";
 				break;
 			case USER_FIELD_EMAIL:
-				$sql .= ' WHERE LOWER(u.email) ' . ($match == 'is' ? '=' : 'LIKE') . ' LOWER(?)';
+				$sql .= ' WHERE LOWER(u.email) '
+				. ($match == 'is' ? '=' : 'LIKE')
+				. ' LOWER(?)';
 				$var = $match == 'is' ? $value : "%$value%";
 				break;
 			case USER_FIELD_URL:
-				$sql .= ' WHERE LOWER(u.url) ' . ($match == 'is' ? '=' : 'LIKE') . ' LOWER(?)';
+				$sql .= ' WHERE LOWER(u.url) '
+				. ($match == 'is' ? '=' : 'LIKE')
+				. ' LOWER(?)';
 				$var = $match == 'is' ? $value : "%$value%";
 				break;
 			case USER_FIELD_FIRSTNAME:
-				$sql .= ' WHERE LOWER(u.first_name) ' . ($match == 'is' ? '=' : 'LIKE') . ' LOWER(?)';
+				$sql .= ' WHERE LOWER(u.first_name) '
+				. ($match == 'is' ? '=' : 'LIKE')
+				. ' LOWER(?)';
 				$var = $match == 'is' ? $value : "%$value%";
 				break;
 			case USER_FIELD_LASTNAME:
-				$sql .= ' WHERE LOWER(u.last_name) ' . ($match == 'is' ? '=' : 'LIKE') . ' LOWER(?)';
+				$sql .= ' WHERE LOWER(u.last_name) '
+				. ($match == 'is' ? '=' : 'LIKE')
+				. ' LOWER(?)';
 				$var = $match == 'is' ? $value : "%$value%";
 				break;
 		}
 
 		$roleDao =& DAORegistry::getDAO('RoleDAO');
-		$orderSql = ($sortBy?(' ORDER BY ' . $roleDao->getSortMapping($sortBy) . ' ' . $this->getDirectionMapping($sortDirection)) : '');
-		if ($field != USER_FIELD_NONE) $result =& $this->retrieveRange($sql . ($allowDisabled?'':' AND u.disabled = 0') . $orderSql, $var, $dbResultRange);
-		else $result =& $this->retrieveRange($sql . ($allowDisabled?'':' WHERE u.disabled = 0') . $orderSql, false, $dbResultRange);
+		$orderSql = ($sortBy
+			? (' ORDER BY ' . $roleDao->getSortMapping($sortBy) . ' ' . $this->getDirectionMapping($sortDirection))
+			: ''
+		);
+
+		if ($field != USER_FIELD_NONE)
+			$result =& $this->retrieveRange($sql . ($allowDisabled ? '' : ' AND   u.disabled = 0') . $orderSql, $var,  $dbResultRange);
+		else
+			$result =& $this->retrieveRange($sql . ($allowDisabled ? '' : ' WHERE u.disabled = 0') . $orderSql, false, $dbResultRange);
 
 		$returner = new DAOResultFactory($result, $this, '_returnUserFromRowWithData');
 		return $returner;
@@ -479,7 +608,11 @@ class PKPUserDAO extends DAO {
 
 		$orderSql = ' ORDER BY u.last_name, u.first_name'; // FIXME Add "sort field" parameter?
 
-		$result =& $this->retrieveRange($sql . ($allowDisabled?'':' AND u.disabled = 0') . $orderSql, false, $dbResultRange);
+		$result =& $this->retrieveRange(
+			$sql
+			. ($allowDisabled ? '' : ' AND u.disabled = 0')
+			. $orderSql, false, $dbResultRange
+		);
 
 		$returner = new DAOResultFactory($result, $this, '_returnUserFromRowWithData');
 		return $returner;
@@ -493,7 +626,10 @@ class PKPUserDAO extends DAO {
 	 */
 	function userExistsById($userId, $allowDisabled = true) {
 		$result =& $this->retrieve(
-			'SELECT COUNT(*) FROM users WHERE user_id = ?' . ($allowDisabled?'':' AND disabled = 0'),
+			'SELECT COUNT(*)
+			FROM users
+			WHERE user_id = ?'
+			. ($allowDisabled? '' : ' AND disabled = 0'),
 			array((int) $userId)
 		);
 		$returner = isset($result->fields[0]) && $result->fields[0] != 0 ? true : false;
@@ -513,7 +649,11 @@ class PKPUserDAO extends DAO {
 	 */
 	function userExistsByUsername($username, $userId = null, $allowDisabled = true) {
 		$result =& $this->retrieve(
-			'SELECT COUNT(*) FROM users WHERE username = ?' . (isset($userId) ? ' AND user_id != ?' : '') . ($allowDisabled?'':' AND disabled = 0'),
+			'SELECT COUNT(*)
+			FROM users
+			WHERE username = ?'
+			. (isset($userId) ? ' AND user_id != ?' : '')
+			. ($allowDisabled ? '' : ' AND disabled = 0'),
 			isset($userId) ? array($username, (int) $userId) : array($username)
 		);
 		$returner = isset($result->fields[0]) && $result->fields[0] == 1 ? true : false;
@@ -533,7 +673,11 @@ class PKPUserDAO extends DAO {
 	 */
 	function userExistsByEmail($email, $userId = null, $allowDisabled = true) {
 		$result =& $this->retrieve(
-			'SELECT COUNT(*) FROM users WHERE email = ?' . (isset($userId) ? ' AND user_id != ?' : '') . ($allowDisabled?'':' AND disabled = 0'),
+			'SELECT COUNT(*)
+			FROM users
+			WHERE email = ?'
+			. (isset($userId) ? ' AND user_id != ?' : '')
+			. ($allowDisabled ? '' : ' AND disabled = 0'),
 			isset($userId) ? array($email, (int) $userId) : array($email)
 		);
 		$returner = isset($result->fields[0]) && $result->fields[0] == 1 ? true : false;

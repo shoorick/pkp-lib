@@ -162,13 +162,9 @@
 			<NOTNULL/>
 		</field>
 		<field name="salutation" type="C2" size="40"/>
-		<field name="first_name" type="C2" size="40">
-			<NOTNULL/>
-		</field>
-		<field name="middle_name" type="C2" size="40"/>
-		<field name="last_name" type="C2" size="90">
-			<NOTNULL/>
-		</field>
+		<field name="first_name" type="X"/>
+		<field name="middle_name" type="X"/>
+		<field name="last_name" type="X"/>
 		<field name="suffix" type="C2" size="40"/>
 		<field name="gender" type="C" size="1"/>
 		<field name="initials" type="C2" size="5"/>
@@ -303,7 +299,7 @@
 			<KEY />
 			<AUTOINCREMENT />
 		</field>
-		<field name="session_id" type="C2" size="128">
+		<field name="session_id" type="C2" size="40">
 			<NOTNULL/>
 		</field>
 		<field name="value" type="C2" size="20">

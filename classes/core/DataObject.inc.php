@@ -88,7 +88,10 @@ class DataObject {
 			}
 		} else {
 			// see http://bugs.php.net/bug.php?id=29848
-			if (isset($this->_data[$key]) && is_array($this->_data[$key]) && isset($this->_data[$key][$locale])) {
+			if (isset($this->_data[$key])
+				&& is_array($this->_data[$key])
+				&& isset($this->_data[$key][$locale])
+			) {
 				return $this->_data[$key][$locale];
 			}
 		}
@@ -127,7 +130,10 @@ class DataObject {
 			if (is_null($value)) {
 				// see http://bugs.php.net/bug.php?id=29848
 				if (isset($this->_data[$key])) {
-					if (is_array($this->_data[$key]) && isset($this->_data[$key][$locale])) unset($this->_data[$key][$locale]);
+					if (is_array($this->_data[$key])
+						&& isset($this->_data[$key][$locale])
+					)
+						unset($this->_data[$key][$locale]);
 					// Was this the last entry for the data variable?
 					if (empty($this->_data[$key])) unset($this->_data[$key]);
 				}
